@@ -76,3 +76,23 @@ Checkpoints and logs will be saved in the `src/output/` directory.
 - The project uses a local `.venv`.
 - `requirements.txt` contains base dependencies.
 - Qwen3-TTS dependencies are installed via `pip install qwen-tts` in the setup script.
+
+## Troubleshooting
+
+### Rate Limits (429 Resource Exhausted)
+The generation script now includes automatic retries with exponential backoff. If you still encounter issues, try running with a smaller limit or wait for your quota to reset.
+```bash
+python src/generate_dataset.py --limit 50
+```
+
+### Missing Audio Files / File Not Found
+If you interrupted the generation or deleted files, `train.jsonl` might be out of sync.
+**Fix**: Delete `src/data/train.jsonl` and run the generation script again. It will skip existing audio files and regenerate the manifest.
+
+### SoX Error / librosa / soundfile
+If you see errors like `SoX could not be found` or `libsndfile` issues:
+1.  Install system dependencies:
+    ```bash
+    sudo apt-get install sox libsndfile1 ffmpeg
+    ```
+2.  If using `finetune.sh`, ensure you have these installed.

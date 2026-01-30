@@ -27,12 +27,30 @@ def main():
     
     ref_audio_path = output_dir / "ref_audio.wav"
     
-    existing_entries = 0
     if jsonl_path.exists():
         with open(jsonl_path, "r", encoding="utf-8") as f:
-            existing_entries = len(f.readlines())
+            lines_json = f.readlines()
+        
+        valid_lines = []
+        for line in lines_json:
+            try:
+                entry = json.loads(line)
+                if Path(entry["audio"]).exists():
+                    valid_lines.append(line)
+            except:
+                pass
+        
+        if len(valid_lines) < len(lines_json):
+            print(f"cleaned {len(lines_json) - len(valid_lines)} invalid entries from {jsonl_path}")
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                f.writelines(valid_lines)
+            existing_entries = len(valid_lines)
+        else:
+             existing_entries = len(lines_json)
+    else:
+        existing_entries = 0
     
-    print(f"Skipping first {existing_entries} sentences.")
+    print(f"Resuming from {existing_entries} sentences.")
     
     count = 0
     with open(jsonl_path, "a", encoding="utf-8") as f_json:
@@ -54,12 +72,25 @@ def main():
             print(f"Generating [{i}]: {text[:30]}...")
             
             if not file_path.exists():
-                saved_path = generate_audio(text, str(file_path))
-                if not saved_path:
-                    print(f"Failed to generate audio for line {i}")
-                    time.sleep(5)
+                retry_count = 0
+                max_retries = 5
+                wait_time = 10
+                
+                while retry_count < max_retries:
+                    saved_path = generate_audio(text, str(file_path))
+                    if saved_path:
+                        break
+                    
+                    print(f"Failed to generate audio for line {i}. Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                    retry_count += 1
+                    wait_time *= 2 # Exponential backoff
+
+                if not file_path.exists():
+                    print(f"Skipping line {i} after max retries.")
                     continue
                 
+                # If this is the first successful generation and we don't have a ref audio, copy it
                 if not ref_audio_path.exists():
                     shutil.copy(saved_path, ref_audio_path)
                     print(f"Set reference audio to {ref_audio_path}")
