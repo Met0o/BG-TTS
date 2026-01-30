@@ -96,3 +96,31 @@ If you see errors like `SoX could not be found` or `libsndfile` issues:
     sudo apt-get install sox libsndfile1 ffmpeg
     ```
 2.  If using `finetune.sh`, ensure you have these installed.
+
+### Flash Attention Installation
+Flash Attention is required for efficient training but must be compiled from source. This requires the **CUDA Toolkit** (not just the NVIDIA driver).
+
+1.  **Install CUDA Toolkit** (match your PyTorch CUDA version, e.g., cu128 → CUDA 12.8):
+    ```bash
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+    sudo dpkg -i cuda-keyring_1.1-1_all.deb
+    sudo apt update
+    sudo apt install cuda-toolkit-12-8
+    ```
+
+2.  **Set environment variables** (add to `~/.bashrc`):
+    ```bash
+    export CUDA_HOME=/usr/local/cuda-12.8
+    export PATH=$CUDA_HOME/bin:$PATH
+    ```
+
+3.  **Install flash-attn** (compilation takes ~1-2 hours):
+    ```bash
+    source ~/.bashrc
+    pip install flash-attn --no-build-isolation
+    ```
+
+### HuggingFace Model Path Error (FileNotFoundError)
+If you see `FileNotFoundError: 'Qwen/Qwen3-TTS-12Hz-1.7B-Base'` during checkpoint saving, the training script was trying to use the HuggingFace model ID as a local path.
+
+**Fix applied to `sft_12hz.py`**: The script now uses `huggingface_hub.snapshot_download()` to resolve the model ID to its local cached path before file operations like `shutil.copytree()`.
