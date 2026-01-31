@@ -71,6 +71,15 @@ The script uses the following default configuration (adjustable in `src/finetune
 
 Checkpoints and logs will be saved in the `src/output/` directory.
 
+### Sample Checkpoint
+
+```bash
+python src/test_finetuned.py \
+  --checkpoint src/output/checkpoint-epoch-24 \
+  --text "Холдън спря, принуждавайки и другите да се спрат зад него." \
+  --output test_result.wav
+```
+
 ## Notes on Dependencies
 
 - The project uses a local `.venv`.

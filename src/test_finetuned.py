@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Test script for the fine-tuned Qwen3-TTS model."""
 import argparse
 import torch
 import soundfile as sf
-import onnxruntime
-onnxruntime.set_default_logger_severity(3)  # Suppress GPU device discovery warnings
 
 from qwen_tts import Qwen3TTSModel
 
@@ -20,7 +17,7 @@ def main():
     parser.add_argument(
         "--text",
         type=str,
-        default="Здравей! Това е тест на финтюнирания модел за български език.",
+        default="Холдън спря, принуждавайки и другите да се спрат зад него.",
         help="Text to synthesize",
     )
     parser.add_argument(
@@ -52,8 +49,14 @@ def main():
     )
 
     print(f"Generating speech for: '{args.text}'")
+    
+    # Prepend language tag to match fine-tuning
+    input_text = args.text
+    if not input_text.strip().startswith("(Bulgarian)"):
+        input_text = f"(Bulgarian) {input_text}"
+        
     wavs, sr = tts.generate_custom_voice(
-        text=args.text,
+        text=input_text,
         speaker=args.speaker,
     )
 

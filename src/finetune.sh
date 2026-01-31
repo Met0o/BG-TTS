@@ -23,7 +23,7 @@ TOKENIZER="Qwen/Qwen3-TTS-Tokenizer-12Hz"
 
 BATCH_SIZE=2
 LR=2e-5
-EPOCHS=3 
+EPOCHS=25
 SPEAKER_NAME="Puck_Bulgarian"
 DEVICE="cuda:0"
 
@@ -51,6 +51,7 @@ echo "=== Step 2: Running Fine-tuning (SFT) ==="
   --batch_size "$BATCH_SIZE" \
   --lr "$LR" \
   --num_epochs "$EPOCHS" \
+  --save_interval 5 \
   --speaker_name "$SPEAKER_NAME"
 
 echo "=== Fine-tuning Complete ==="
